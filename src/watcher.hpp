@@ -1,24 +1,31 @@
 #pragma once
 
+#include "event.hpp"
+#include <cstddef>
 #include <filesystem>
 #include <queue>
 #include <sys/inotify.h>
-#include "event.hpp"
+#include <sys/types.h>
 
 // wrapper for the inotify extension in linux
-namespace hywatch{
+namespace hywatch {
 
     class Watcher {
       public:
-        Watcher();
-        ~Watcher();
+        Watcher() = default;
+        ~Watcher() = default;
         Watcher(Watcher &&) = default;
         Watcher(const Watcher &) = default;
         Watcher &operator =(Watcher &&) = default;
         Watcher &operator =(const Watcher &) = default;
-        void watchFile(std::filesystem::path file);
+        int initNotify();
+        void addWatch(int fileDescriptor, std::filesystem::path file, uint mask);
+        std::queue<Event> getEventQueue();
 
       private:
-        std::queue<Event> m_EventQueue;
+        std::queue<Event> m_EventQueue {};
+        bool m_IsInitiated {false};
+        bool setIsInitiated(bool value);
+        bool getIsInitiated();
     };
-} // namespace watcher
+} // namespace hywatch
