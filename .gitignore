@@ -1,3 +1,6 @@
 .cache/
-build
-.clang
+**/build/
+.clangd
+CMakeCache.txt
+**/**/CMakeFiles
+**/**/Makefile

@@ -8,7 +8,7 @@ namespace fs = std::filesystem;
 
 namespace hywatch {
 
-    enum class EventEnum : std::uint32_t {
+    enum class EventMask : std::uint32_t {
         access = IN_ACCESS,
         modify = IN_MODIFY,
         attrib = IN_ATTRIB,
@@ -22,14 +22,18 @@ namespace hywatch {
         create = IN_CREATE,
         idelete = IN_DELETE,
         delete_self = IN_DELETE_SELF,
-        move_self = IN_MOVE_SELF
+        move_self = IN_MOVE_SELF,
+
+        all = IN_ALL_EVENTS
     };
 
     class Event {
       public:
         Event(int wd, uint32_t mask, std::string path)
-            : m_wd {wd}, m_mask {(static_cast<EventEnum>(mask))},
+            : m_wd {wd}, m_mask {(static_cast<EventMask>(mask))},
               m_path {path} {}
+
+        Event(const inotify_event& e);
 
         Event(Event &&) = default;
         Event(const Event &) = default;
@@ -39,8 +43,9 @@ namespace hywatch {
 
       private:
         int m_wd {0};
-        EventEnum m_mask {0};
+        EventMask m_mask {0};
         fs::path m_path {""};
+
     };
 
 } // namespace hywatch
