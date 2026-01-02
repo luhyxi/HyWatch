@@ -46,9 +46,10 @@ namespace hywatch {
             }
 
             for (auto p = m_Buf.data(); p < m_Buf.data() + numRead;) {
-                auto *ie = reinterpret_cast<const inotify_event *>(p);
+                const inotify_event *ie = reinterpret_cast<const inotify_event *>(p);
 
                 Event e(*ie);
+                e.printEvent();
             }
 
         } while (true);

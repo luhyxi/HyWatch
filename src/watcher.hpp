@@ -24,7 +24,7 @@ namespace hywatch {
         int initNotify();
         int addWatch(std::filesystem::path file, EventMask mask = EventMask::all);
         std::queue<Event> getEventQueue();
-
+        int readEvents();
       private:
         static constexpr std::size_t BUF_LEN = 10 * (sizeof(struct inotify_event) + NAME_MAX + 1);
 
@@ -36,6 +36,5 @@ namespace hywatch {
 
         bool setIsInitiated(bool value);
         bool getIsInitiated();
-        int readEvents();
     };
 } // namespace hywatch

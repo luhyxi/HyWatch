@@ -29,11 +29,13 @@ namespace hywatch {
 
     class Event {
       public:
-        Event(int wd, uint32_t mask, std::string path)
-            : m_wd {wd}, m_mask {(static_cast<EventMask>(mask))},
-              m_path {path} {}
+        // Constructors
+        Event(int wd, uint32_t mask, std::string path) :
+            m_wd {wd},
+            m_mask {(static_cast<EventMask>(mask))},
+            m_path {path} {}
 
-        Event(const inotify_event& e);
+        Event(const inotify_event &e);
 
         Event(Event &&) = default;
         Event(const Event &) = default;
@@ -41,11 +43,14 @@ namespace hywatch {
         Event &operator =(const Event &) = default;
         ~Event() = default;
 
-      private:
+        // Functions
+        void printEvent();
+
+        // Members
         int m_wd {0};
         EventMask m_mask {0};
         fs::path m_path {""};
-
+        std::time_t m_timestamp {};
     };
 
 } // namespace hywatch
