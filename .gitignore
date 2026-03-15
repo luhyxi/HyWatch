@@ -1,5 +1,7 @@
 .cache/
-**/build/
+build/
+out/
+compile_commands.json
 .clangd
 CMakeCache.txt
 **/**/CMakeFiles

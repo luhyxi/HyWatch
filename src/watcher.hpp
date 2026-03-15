@@ -11,30 +11,27 @@
 // wrapper for the inotify extension in linux
 namespace hywatch {
 
+    static constexpr std::size_t BUF_LEN = 10 * (sizeof(struct inotify_event) + NAME_MAX + 1);
+    
     class Watcher {
       public:
-        /* Might need to create a constructor inside the .cpp file */
+        // constructors
         Watcher() : m_Buf(BUF_LEN) {};
-        ~Watcher() = default;
+        ~Watcher();
         Watcher(Watcher &&) = default;
         Watcher(const Watcher &) = default;
-        Watcher &operator =(Watcher &&) = default;
-        Watcher &operator =(const Watcher &) = default;
+        Watcher &operator =(Watcher &&) = delete;
+        Watcher &operator =(const Watcher &) = delete;
 
+        // functions
         int initNotify();
         int addWatch(std::filesystem::path file, EventMask mask = EventMask::all);
-        std::queue<Event> getEventQueue();
         int readEvents();
-      private:
-        static constexpr std::size_t BUF_LEN = 10 * (sizeof(struct inotify_event) + NAME_MAX + 1);
 
+        // members
         std::vector<char> m_Buf;
-
         std::queue<Event> m_EventQueue {};
         int m_Fd {0};
         bool m_IsInitiated {false};
-
-        bool setIsInitiated(bool value);
-        bool getIsInitiated();
     };
 } // namespace hywatch

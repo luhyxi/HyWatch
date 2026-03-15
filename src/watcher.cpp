@@ -3,10 +3,16 @@
 #include <cstring>
 #include <iostream>
 #include <print>
+#include <queue>
 #include <sys/inotify.h>
 #include <unistd.h>
 
 namespace hywatch {
+
+    Watcher::~Watcher() {
+        if (m_Fd > 0) { close(m_Fd); }
+    }
+
     int Watcher::initNotify() {
         m_Fd = inotify_init();
         if (m_Fd == -1) {
@@ -14,13 +20,9 @@ namespace hywatch {
             return -1;
         }
         std::println("inotify instance started sucessfully");
-        setIsInitiated(true);
+        m_IsInitiated = {true};
         return 0;
     }
-
-    bool Watcher::setIsInitiated(bool value) { return m_IsInitiated = value; }
-
-    bool Watcher::getIsInitiated() { return m_IsInitiated; }
 
     int Watcher::addWatch(std::filesystem::path file, EventMask mask) {
         auto res = inotify_add_watch(m_Fd, file.c_str(), static_cast<uint>(mask));
@@ -33,14 +35,23 @@ namespace hywatch {
         return 0;
     }
 
+    void readEventsFromQueue(std::queue<Event> &queue) {
+        while (!queue.empty()) {
+            queue.front().printEvent();
+            queue.pop();
+        }
+    }
+
     /* might be a good idea to make this async */
     int Watcher::readEvents() {
         do {
             auto numRead = read(m_Fd, m_Buf.data(), BUF_LEN);
             if (numRead == 0) {
                 std::println(std::cerr, "read() from inotify instance failed {}", std::strerror(errno));
+                return -1;
             }
             if (numRead == -1) {
+                if (errno == EINTR) { continue; }
                 std::println(std::cerr, "read() error {}", std::strerror(errno));
                 return -1;
             }
@@ -48,12 +59,10 @@ namespace hywatch {
             for (auto p = m_Buf.data(); p < m_Buf.data() + numRead;) {
                 const inotify_event *ie = reinterpret_cast<const inotify_event *>(p);
 
-                Event e(*ie);
-                e.printEvent();
+                m_EventQueue.push(Event(*ie));
+                p += sizeof(struct inotify_event) + ie->len;
             }
-
+            readEventsFromQueue(m_EventQueue);
         } while (true);
-        return 0;
     };
-
 }; // namespace hywatch
